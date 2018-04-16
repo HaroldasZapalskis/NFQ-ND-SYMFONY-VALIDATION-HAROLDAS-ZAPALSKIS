@@ -23,3 +23,7 @@ services:
             $namespace: '%weather_cache_namespace%'
             $defaultLifetime: '%weather_cache_default_life_time%'
             $directory: '%weather_cache_directory%'
+
+    app.validation.validation_service:
+        class: App\Validation\ValidationService
+        public: true

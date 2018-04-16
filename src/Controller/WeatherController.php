@@ -7,19 +7,28 @@ use App\Weather\LoaderService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Psr\SimpleCache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
+use App\Validation\ValidationService;
 
 class WeatherController extends AbstractController
 {
     /**
      * @param               $day
      * @param LoaderService $weatherLoader
+     * @param ValidationService $validationService
      * @return Response
      * @throws InvalidArgumentException
      */
-    public function index($day, LoaderService $weatherLoader): Response
+    public function index($day, LoaderService $weatherLoader, ValidationService $validationService): Response
     {
         try {
-            $weather = $weatherLoader->loadWeatherByDay(new \DateTime($day));
+            $error = $validationService->validate($day);
+            if(!$error) {
+                $weather = $weatherLoader->loadWeatherByDay(new \DateTime($day));
+            } else {
+                return $this->render('weather/error.html.twig', [
+                    'error' => $error
+                ]);
+            }
         } catch (\Exception $exp) {
             $weather = new NullWeather();
         }
@@ -30,7 +39,6 @@ class WeatherController extends AbstractController
                 'dayTemp'   => $weather->getDayTemp(),
                 'nightTemp' => $weather->getNightTemp(),
                 'sky'       => $weather->getSky(),
-                'provider'  => $weather->getProvider()
             ],
         ]);
     }
