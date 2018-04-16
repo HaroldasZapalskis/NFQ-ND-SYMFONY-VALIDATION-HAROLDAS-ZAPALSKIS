@@ -21,13 +21,17 @@ class WeatherController extends AbstractController
     public function index($day, LoaderService $weatherLoader, ValidationService $validationService): Response
     {
         try {
-            $error = $validationService->validate($day);
-            if(!$error) {
+            if($day === null) {
                 $weather = $weatherLoader->loadWeatherByDay(new \DateTime($day));
             } else {
-                return $this->render('weather/error.html.twig', [
-                    'error' => $error
-                ]);
+                $error = $validationService->validate($day);
+                if (!$error) {
+                    $weather = $weatherLoader->loadWeatherByDay(new \DateTime($day));
+                } else {
+                    return $this->render('weather/error.html.twig', [
+                        'error' => $error
+                    ]);
+                }
             }
         } catch (\Exception $exp) {
             $weather = new NullWeather();
